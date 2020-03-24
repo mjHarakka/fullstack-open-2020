@@ -11,10 +11,19 @@ const Header = (props) => {
 
 const Content = (props) => {
     const parts = props.parts
-    
+
+    const total = parts.map(part => part.exercises).reduce((s, p) => s + p)
+
+    console.log(total)
+
     return (
         <div>
-          {parts.map((part) => <Part name={part.name} exercises={part.exercises}/>)}
+          {parts.map((part) => <Part key={part.id} name={part.name} exercises={part.exercises}/>)}
+          <b>
+
+          Total of {total} exercises       
+
+          </b>
         </div>
     )
 }
