@@ -18,7 +18,7 @@ const Notification = ({ message }) => {
 }
 
 const App = () => {
-    const [persons, setPersons] = useState([])
+    const [persons, setPersons] = useState([{ name: "moi", number: "moi" }])
     const [newName, setNewName] = useState('')
     const [newNumber, setNewNumber] = useState('')
     const [filterValue, setFilterValue] = useState('')
@@ -30,7 +30,6 @@ const App = () => {
             .getAll()
             .then(response => {
                 setPersons(response)
-                console.log('test')
             })
     }, [])
 
