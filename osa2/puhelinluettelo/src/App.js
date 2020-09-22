@@ -26,13 +26,12 @@ const App = () => {
     const [successMessage, setsuccessMessage] = useState(null)
 
     useEffect(() => {
-        personService
-            .getAll()
-            .then(response => {
-                setPersons(response)
-                console.log('test')
-            })
-    }, [])
+        personService 
+          .getAll()
+            .then(initialPersons => {
+            setResults(initialPersons)
+          })
+      }, [])
 
     const addPerson = (event) => {
         event.preventDefault()
@@ -65,7 +64,6 @@ const App = () => {
                 personService
                     .update(id, personObject)
                     .then(returnedPerson => {
-
                         setNewName('')
                         setNewNumber('')
                     })
