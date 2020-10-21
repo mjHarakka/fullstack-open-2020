@@ -25,65 +25,36 @@ const App = () => {
     const [results, setResults] = useState([])
     const [successMessage, setsuccessMessage] = useState(null)
 
+    const addPerson = (event) => {
+        event.preventDefault()
+        
+        const personObject = {
+            name: newName,
+            number: newNumber
+        }
+
+        personService
+                .create(personObject)
+                .then(returnedPerson => {
+                    setNewName('')
+                    setNewNumber('')
+                }).then(personService.getAll().then(initialPersons => {
+                    setResults(initialPersons)
+                }))
+            setsuccessMessage(`Added ${newName} succesfully`)
+            setTimeout(() => {
+                setsuccessMessage(null)
+            }, 5000)
+    }
+
     useEffect(() => {
         personService 
           .getAll()
             .then(initialPersons => {
             setResults(initialPersons)
           })
-      }, [])
-
-    const addPerson = (event) => {
-        event.preventDefault()
-        const personObject = {
-            name: newName,
-            number: newNumber,
-            id: persons.length + 1
-        }
-
-        let found = false
-
-        for (let i = 0; i < persons.length; i++) {
-            if (persons[i].name === newName) {
-                found = true
-                break
-            }
-        }
-
-        if (found) {
-            if (window.confirm(`${newName} is already in your phonebook, do you want to replace it?`)) {
-                let id = 0;
-
-                for (let i = 0; i < persons.length; i++) {
-                    if (persons[i].name === newName) {
-                        id = persons[i].id
-                        break
-                    }
-                }
-
-                personService
-                    .update(id, personObject)
-                    .then(returnedPerson => {
-                        setNewName('')
-                        setNewNumber('')
-                    })
-            }
-        } else {
-            personService
-                .create(personObject)
-                .then(returnedPerson => {
-                    setPersons(persons.concat(returnedPerson))
-                    setNewName('')
-                    setNewNumber('')
-                })
-            setsuccessMessage(`Added ${newName} succesfully`)
-            setTimeout(() => {
-                setsuccessMessage(null)
-            }, 5000)
-        }
-
-    }
-
+    }, [])
+    
     const handleNameChange = (event) => {
         event.preventDefault()
         setNewName(event.target.value)
@@ -112,7 +83,7 @@ const App = () => {
     }
 
     useEffect(() => {
-        setResults(persons.filter(person => person.name.toLowerCase().indexOf(filterValue) !== -1))
+        setResults(results.filter(person => person.name.toLowerCase() === filterValue.toLowerCase))
     }, [])
 
     const rows = () => {
