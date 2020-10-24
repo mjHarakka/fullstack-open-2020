@@ -1,26 +1,39 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import ReactDOM from 'react-dom'
 
-const Button = (props) => {
+const StatisticLine = ({ text, value }) => {
     return (
-        <button onClick={props.function}>{props.text}</button>
+        <tr>
+            <td>{text}</td>
+            <td>{value}</td>
+        </tr>
     )
 }
 
-const Statistics = (props) => {
+const Button = props => {
+    return (
+        <div>
+            <button onClick={props.handleClick} style={{ float: 'left' }}>{props.text}</button>
+        </div>
+    )
+}
+
+const Statistics = props => {
     const good = props.good
     const neutral = props.neutral
     const bad = props.bad
+
     const all = good + neutral + bad
-    let avg = good + neutral * 0 + bad *-1 / all
-    const pos = (good / all * 100) + " % "
+    const pos = good / all + " %"
+    const avg = ((1 * good) + (-1 * bad)) / all + " %"
 
-    if (isNaN(avg)) {
-        avg = 0
-    }
+    if (!all) {
+        return (
+            <div>no feedback given</div>
+        )
+    } else {
 
-    return (
-       
+        return (
             <table>
                 <tbody>
                     <StatisticLine text="good" value={good} />
@@ -29,55 +42,33 @@ const Statistics = (props) => {
                     <StatisticLine text="all" value={all} />
                     <StatisticLine text="average" value={avg} />
                     <StatisticLine text="positive" value={pos} />
-                </tbody>    
+                </tbody>
             </table>
-            
-            
-       
-    )
-}
+        )
 
-const StatisticLine = (props) => {
+    }
 
-    return (
-       <tr>
-            <td>{props.text}</td>
-            <td>{props.value}</td>
-        </tr>
-    )
 }
 
 const App = () => {
+    // tallenna napit omaan tilaansa
     const [good, setGood] = useState(0)
     const [neutral, setNeutral] = useState(0)
     const [bad, setBad] = useState(0)
 
-    let stat = "No stats"
-
-    if (good !== 0 || neutral !== 0 || bad !== 0) {
-        stat = <Statistics good={good} neutral={neutral} bad={bad}/>
-    } 
-
     return (
         <div>
             <h1>give feedback</h1>
-
-            <Button function={() => setGood(good + 1)} text={"good"}></Button>
-            <Button function={() => setNeutral(neutral + 1)} text={"neutral"}></Button>
-            <Button function={() => setBad(bad + 1)} text={"bad"}></Button>
-            
+            <Button text="good" handleClick={() => setGood(good + 1)} />
+            <Button text="neutral" handleClick={() => setNeutral(neutral + 1)} />
+            <Button text="bad" handleClick={() => setBad(bad + 1)} />
+            <br />
             <h1>statistics</h1>
-            {
-                
-            stat
-
-
-            }
-
-           
-            
+            <Statistics good={good} neutral={neutral} bad={bad} />
         </div>
     )
 }
 
-ReactDOM.render(<App />, document.getElementById('root'))
+ReactDOM.render(<App />,
+    document.getElementById('root')
+)
