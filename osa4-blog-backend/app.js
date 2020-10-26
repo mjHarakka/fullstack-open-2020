@@ -1,20 +1,33 @@
-const config = require('./utils/config')
-const express = require('express')
-const app = express()
-const cors = require('cors')
-const mongoose = require('mongoose')
-const listHelper = require('../utils/list_helper')
+const config = require("./utils/config");
+const express = require("express");
+const app = express();
+const cors = require("cors");
+const mongoose = require("mongoose");
+const blogsRouter = require("./controllers/blogs");
+const middleware = require("./utils/middleware")
 
-test('dummy returns one', () => {
-  const blogs = []
+mongoose
+  .connect(config.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    useCreateIndex: true,
+  })
+  .then(() => {
+    logger.info("connected to MongoDB");
+  })
+  .catch((error) => {
+    logger.error("error connection to MongoDB:", error.message);
+  });
 
-  const result = listHelper.dummy(blogs)
-  expect(result).toBe(1)
-})
+app.use(cors());
+app.use(express.static("build"));
+app.use(express.json());
+app.use(middleware.requestLogger);
 
-app.use(cors())
-app.use(express.json())
-app.use('/api/blogs', blogsRouter)
+app.use("/api/blogs", blogsRouter);
 
-module.exports = app
+app.use(middleware.unknownEndpoint);
+app.use(middleware.errorHandler);
 
+module.exports = app;

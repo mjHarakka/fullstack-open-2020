@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import Person from "./components/Person";
 import AddPersonForm from "./components/AddPersonForm";
 import FilterForm from "./components/FilterForm";
-import axios from "axios";
-import personService from "./services/persons";
+import personsService from "./services/persons";
 
 const Notification = ({ message, messageType }) => {
   if (message === null) {
@@ -22,16 +21,21 @@ const Notification = ({ message, messageType }) => {
 };
 
 const App = () => {
-  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [nameFilter, setNameFilter] = useState("");
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState("");
+  const [persons, setPersons] = useState([
+    { name: "Arto Hellas", number: "040-123456" },
+    { name: "Ada Lovelace", number: "39-44-5323523" },
+    { name: "Dan Abramov", number: "12-43-234345" },
+    { name: "Mary Poppendieck", number: "39-23-6423122" },
+  ]);
 
   useEffect(() => {
-    personService.getAll().then((initiaLPersons) => {
-      setPersons(initiaLPersons);
+    personsService.getAll().then((initialPersons) => {
+      setPersons(initialPersons);
     });
   }, []);
 
@@ -55,7 +59,7 @@ const App = () => {
           number: newNumber,
         };
 
-        personService
+        personsService
           .update(id, personObject)
           .then((returnedPerson) => {
             setPersons(
@@ -87,7 +91,7 @@ const App = () => {
         number: newNumber,
       };
 
-      personService.create(personObject).then((returnedPerson) => {
+      personsService.create(personObject).then((returnedPerson) => {
         setPersons(persons.concat(returnedPerson));
         setNewName("");
         setNewNumber("");
@@ -102,7 +106,7 @@ const App = () => {
 
   const handleDelete = (person) => {
     if (window.confirm(`Delete ${person.name}?`)) {
-      personService.remove(person.id);
+      personsService.remove(person.id);
       setPersons(persons.filter((p) => p.id !== person.id));
     }
     setMessage(`Removed ${person.name}`);
