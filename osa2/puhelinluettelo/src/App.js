@@ -15,7 +15,9 @@ const Notification = ({ message, messageType }) => {
   } else if (messageType === "ERROR") {
     return <div className="error">{message}</div>;
   } else {
-    return <div>Something wen't wrong with this message</div>;
+    return (
+      <div className="error">Something wen't wrong with this message.</div>
+    );
   }
 };
 
