@@ -1,130 +1,156 @@
-import React, { useState, useEffect } from 'react'
-import PersonForm from './components/PersonForm'
-import Filter from './components/Filter'
-import personService from './services/persons'
-import Person from './Person'
-import './index.css'
+import React, { useState, useEffect } from "react";
+import Person from "./components/Person";
+import AddPersonForm from "./components/AddPersonForm";
+import FilterForm from "./components/FilterForm";
+import axios from "axios";
+import personService from "./services/persons";
 
-const Notification = ({ message }) => {
-    if (message === null) {
-        return null
-    }
+const Notification = ({ message, messageType }) => {
+  if (message === null) {
+    return null;
+  }
 
-    return (
-        <div className="success">
-            {message}
-        </div>
-    )
-}
+  if (messageType === "SUCCESS") {
+    return <div className="success">{message}</div>;
+  } else if (messageType === "ERROR") {
+    return <div className="error">{message}</div>;
+  } else {
+    return <div>Something wen't wrong with this message</div>;
+  }
+};
 
 const App = () => {
-    const [persons, setPersons] = useState([])
-    const [newName, setNewName] = useState('')
-    const [newNumber, setNewNumber] = useState('')
-    const [filterValue, setFilterValue] = useState('')
-    const [results, setResults] = useState([])
-    const [successMessage, setsuccessMessage] = useState(null)
+  const [persons, setPersons] = useState([]);
+  const [newName, setNewName] = useState("");
+  const [newNumber, setNewNumber] = useState("");
+  const [nameFilter, setNameFilter] = useState("");
+  const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState("");
 
-    const addPerson = (event) => {
-        event.preventDefault()
-        
+  useEffect(() => {
+    personService.getAll().then((initiaLPersons) => {
+      setPersons(initiaLPersons);
+    });
+  }, []);
+
+  const filteredPersons = persons.filter((person) => {
+    return person.name.toLowerCase().includes(nameFilter.toLowerCase());
+  });
+
+  const addPerson = (event) => {
+    event.preventDefault();
+
+    if (persons.find((person) => person.name === newName)) {
+      if (
+        window.confirm(
+          `${newName} is already added to the phonebook, replace the old number with a new one?`
+        )
+      ) {
+        const id = persons.find((person) => person.name === newName).id;
         const personObject = {
-            name: newName,
-            number: newNumber
-        }
+          id: id,
+          name: newName,
+          number: newNumber,
+        };
 
         personService
-                .create(personObject)
-                .then(returnedPerson => {
-                    setNewName('')
-                    setNewNumber('')
-                }).then(personService.getAll().then(initialPersons => {
-                    setResults(initialPersons)
-                }))
-            setsuccessMessage(`Added ${newName} succesfully`)
-            setTimeout(() => {
-                setsuccessMessage(null)
-            }, 5000)
-    }
-
-    useEffect(() => {
-        personService 
-          .getAll()
-            .then(initialPersons => {
-            setResults(initialPersons)
+          .update(id, personObject)
+          .then((returnedPerson) => {
+            setPersons(
+              persons.map((person) =>
+                person.id !== id ? person : returnedPerson
+              )
+            );
           })
-    }, [])
-    
-    const handleNameChange = (event) => {
-        event.preventDefault()
-        setNewName(event.target.value)
-        console.log(event.target.value)
+          .catch((error) => {
+            setMessage(
+              `The person ${personObject.name} was already deleted from the Server`
+            );
+            setMessageType("ERROR");
+            setTimeout(() => {
+              setMessage(null);
+            }, 5000);
+            setPersons(persons.filter((n) => n.id !== id));
+          });
+
+        setMessage(`Updated ${personObject.name}`);
+        setMessageType("SUCCESS");
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
+      }
+    } else {
+      const personObject = {
+        name: newName,
+        number: newNumber,
+      };
+
+      personService.create(personObject).then((returnedPerson) => {
+        setPersons(persons.concat(returnedPerson));
+        setNewName("");
+        setNewNumber("");
+      });
+      setMessage(`Added ${personObject.name}`);
+      setMessageType("SUCCESS");
+      setTimeout(() => {
+        setMessage(null);
+      }, 5000);
     }
+  };
 
-    const handleNumberChange = (event) => {
-        event.preventDefault()
-        setNewNumber(event.target.value)
-        console.log(event.target.value)
+  const handleDelete = (person) => {
+    if (window.confirm(`Delete ${person.name}?`)) {
+      personService.remove(person.id);
+      setPersons(persons.filter((p) => p.id !== person.id));
     }
+    setMessage(`Removed ${person.name}`);
+    setMessageType("SUCCESS");
+    setTimeout(() => {
+      setMessage(null);
+    }, 5000);
+  };
 
-    const handleFiltering = (event) => {
-        event.preventDefault()
-        setFilterValue(event.target.value)
-    }
+  const handleNameChange = (event) => {
+    setNewName(event.target.value);
+  };
 
-    const handleDelete = (id) => {
-        console.log(id)
+  const handleNumberChange = (event) => {
+    setNewNumber(event.target.value);
+  };
 
-        if (window.confirm("Do you want to delete person?")) {
-            console.log('deleted item')
-            personService.remove(id)
-        }
+  const handleFilterChange = (event) => {
+    setNameFilter(event.target.value);
+  };
 
-    }
+  const rows = () => {
+    return filteredPersons.map((person) => (
+      <Person
+        key={person.id}
+        person={person}
+        handleDelete={handleDelete.bind(this, person)}
+      />
+    ));
+  };
 
-    useEffect(() => {
-        setResults(results.filter(person => person.name.toLowerCase().includes.filterValue.toLowerCase()))
-    }, [])
+  return (
+    <div>
+      <h2>Phonebook</h2>
+      <Notification message={message} messageType={messageType} />
+      <FilterForm
+        handleFilterChange={handleFilterChange}
+        nameFilter={nameFilter}
+      />
+      <AddPersonForm
+        newName={newName}
+        newNumber={newNumber}
+        handleNameChange={handleNameChange}
+        handleNumberChange={handleNumberChange}
+        addPerson={addPerson}
+      />
+      <h2>Numbers</h2>
+      {rows()}
+    </div>
+  );
+};
 
-    const rows = () => {
-        return (
-            results.map(person =>
-
-                <Person
-                    key={person.id}
-                    person={person}
-                    handleDelete={handleDelete.bind(this, person.id)}
-                />
-            )
-        )
-    }
-
-    return (
-        <div>
-            <h2>Phonebook</h2>
-            <Notification message={successMessage} />
-            filter shown with
-            <Filter
-                filterValue={filterValue}
-                handleFiltering={handleFiltering}
-            />
-
-            <PersonForm
-                newName={newName}
-                handleNameChange={handleNameChange}
-                newNumber={newNumber}
-                handleNumberChange={handleNumberChange}
-                addPerson={addPerson}
-            />
-
-            <h2>Numbers</h2>
-            <ul>
-                {rows()}
-            </ul>
-
-        </div>
-    )
-
-}
-
-export default App
+export default App;
