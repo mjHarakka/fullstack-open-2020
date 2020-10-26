@@ -73,7 +73,7 @@ const App = () => {
     }
 
     const handleDelete = (id) => {
-        console.log('works')
+        console.log(id)
 
         if (window.confirm("Do you want to delete person?")) {
             console.log('deleted item')
@@ -83,7 +83,7 @@ const App = () => {
     }
 
     useEffect(() => {
-        setResults(results.filter(person => person.name.toLowerCase() === filterValue.toLowerCase))
+        setResults(results.filter(person => person.name.toLowerCase().includes.filterValue.toLowerCase()))
     }, [])
 
     const rows = () => {
