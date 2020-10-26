@@ -69,10 +69,6 @@ const App = () => {
 
   const results = countries.filter(country => country.name.indexOf(searchValue) != -1)
 
-
-  
-
-
   useEffect(() => {
     console.log('effect')
     axios
