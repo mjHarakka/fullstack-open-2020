@@ -14,24 +14,17 @@ const Notification = ({ message, messageType }) => {
   } else if (messageType === "ERROR") {
     return <div className="error">{message}</div>;
   } else {
-    return (
-      <div className="error">Something wen't wrong with this message.</div>
-    );
+    return <div className="error">Something wen't wrong with the message.</div>;
   }
 };
 
 const App = () => {
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [nameFilter, setNameFilter] = useState("");
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState("");
-  const [persons, setPersons] = useState([
-    { name: "Arto Hellas", number: "040-123456" },
-    { name: "Ada Lovelace", number: "39-44-5323523" },
-    { name: "Dan Abramov", number: "12-43-234345" },
-    { name: "Mary Poppendieck", number: "39-23-6423122" },
-  ]);
 
   useEffect(() => {
     personsService.getAll().then((initialPersons) => {
@@ -91,16 +84,26 @@ const App = () => {
         number: newNumber,
       };
 
-      personsService.create(personObject).then((returnedPerson) => {
-        setPersons(persons.concat(returnedPerson));
-        setNewName("");
-        setNewNumber("");
-      });
-      setMessage(`Added ${personObject.name}`);
-      setMessageType("SUCCESS");
-      setTimeout(() => {
-        setMessage(null);
-      }, 5000);
+      personsService
+        .create(personObject)
+        .then((returnedPerson) => {
+          setPersons(persons.concat(returnedPerson));
+          setNewName("");
+          setNewNumber("");
+          //Success message handling
+          setMessage(`Added ${personObject.name}`);
+          setMessageType("SUCCESS");
+          setTimeout(() => {
+            setMessage(null);
+          }, 5000);
+        })
+        .catch((error) => {
+          setMessage("Name or number missing");
+          setMessageType("ERROR");
+          setTimeout(() => {
+            setMessage(null);
+          }, 5000);
+        });
     }
   };
 
@@ -131,7 +134,7 @@ const App = () => {
   const rows = () => {
     return filteredPersons.map((person) => (
       <Person
-        key={person.id}
+        key={person.name}
         person={person}
         handleDelete={handleDelete.bind(this, person)}
       />
