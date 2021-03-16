@@ -98,11 +98,8 @@ const App = () => {
           }, 5000);
         })
         .catch((error) => {
-          setMessage("Name or number missing");
+          setMessage(error.response.data);
           setMessageType("ERROR");
-          setTimeout(() => {
-            setMessage(null);
-          }, 5000);
         });
     }
   };
